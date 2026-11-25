@@ -111,10 +111,8 @@ def fill(path: Path, body: str) -> None:
         raise SystemExit(f"{path.name} is missing the results markers")
     head, rest = text.split(START, 1)
     _, tail = rest.split(END, 1)
-    path.write_text(f"{head}{START}
-
-{body}
-{END}{tail}", encoding="utf-8")
+    nl = chr(10)
+    path.write_text(f"{head}{START}{nl}{nl}{body}{nl}{END}{tail}", encoding="utf-8")
 
 
 def main() -> None:

@@ -33,6 +33,150 @@ All tables below are generated from the files in `results/` by `scripts/report.p
 
 <!-- results:start -->
 
+### Crash sweep (safe)
+
+Source: `results/sweep_bank_5_20261125T160523Z.json` (git `e5a5d75120`).
+
+| metric | value |
+|---|---|
+| points | 20 |
+| duplicates | 0 |
+| lost | 0 |
+| unknown surfaced | 1 |
+| recovery p50 (ms) | 2840 |
+| recovery p95 (ms) | 3256 |
+| recovery max (ms) | 3256 |
+
+<details><summary>Every point</summary>
+
+| step | point | crashed | dup | lost | unknown | pass |
+|---|---|---|---|---|---|---|
+| 0 | P1_after_planned | True | 0 | 0 | 0 | True |
+| 0 | P2_after_exec | True | 0 | 0 | 0 | True |
+| 0 | P3_after_commit | True | 0 | 0 | 0 | True |
+| 0 | P4_awaiting_approval | False | 0 | 0 | 0 | True |
+| 1 | P1_after_planned | True | 0 | 0 | 0 | True |
+| 1 | P2_after_exec | True | 0 | 0 | 0 | True |
+| 1 | P3_after_commit | True | 0 | 0 | 0 | True |
+| 1 | P4_awaiting_approval | True | 0 | 0 | 0 | True |
+| 2 | P1_after_planned | True | 0 | 0 | 0 | True |
+| 2 | P2_after_exec | True | 0 | 0 | 0 | True |
+| 2 | P3_after_commit | True | 0 | 0 | 0 | True |
+| 2 | P4_awaiting_approval | False | 0 | 0 | 0 | True |
+| 3 | P1_after_planned | True | 0 | 0 | 0 | True |
+| 3 | P2_after_exec | True | 0 | 0 | 0 | True |
+| 3 | P3_after_commit | True | 0 | 0 | 0 | True |
+| 3 | P4_awaiting_approval | False | 0 | 0 | 0 | True |
+| 4 | P1_after_planned | True | 0 | 0 | 0 | True |
+| 4 | P2_after_exec | True | 0 | 0 | 1 | True |
+| 4 | P3_after_commit | True | 0 | 0 | 0 | True |
+| 4 | P4_awaiting_approval | False | 0 | 0 | 0 | True |
+
+</details>
+
+### Crash sweep (second kill during recovery)
+
+Source: `results/sweep_bank_5_double_20261125T163634Z.json` (git `424f53c6a0`).
+
+| metric | value |
+|---|---|
+| points | 20 |
+| duplicates | 0 |
+| lost | 0 |
+| unknown surfaced | 1 |
+| recovery p50 (ms) | 8403 |
+| recovery p95 (ms) | 13187 |
+| recovery max (ms) | 13187 |
+
+<details><summary>Every point</summary>
+
+| step | point | crashed | dup | lost | unknown | pass |
+|---|---|---|---|---|---|---|
+| 0 | P1_after_planned | True | 0 | 0 | 0 | True |
+| 0 | P2_after_exec | True | 0 | 0 | 0 | True |
+| 0 | P3_after_commit | True | 0 | 0 | 0 | True |
+| 0 | P4_awaiting_approval | False | 0 | 0 | 0 | True |
+| 1 | P1_after_planned | True | 0 | 0 | 0 | True |
+| 1 | P2_after_exec | True | 0 | 0 | 0 | True |
+| 1 | P3_after_commit | True | 0 | 0 | 0 | True |
+| 1 | P4_awaiting_approval | True | 0 | 0 | 0 | True |
+| 2 | P1_after_planned | True | 0 | 0 | 0 | True |
+| 2 | P2_after_exec | True | 0 | 0 | 0 | True |
+| 2 | P3_after_commit | True | 0 | 0 | 0 | True |
+| 2 | P4_awaiting_approval | False | 0 | 0 | 0 | True |
+| 3 | P1_after_planned | True | 0 | 0 | 0 | True |
+| 3 | P2_after_exec | True | 0 | 0 | 0 | True |
+| 3 | P3_after_commit | True | 0 | 0 | 0 | True |
+| 3 | P4_awaiting_approval | False | 0 | 0 | 0 | True |
+| 4 | P1_after_planned | True | 0 | 0 | 0 | True |
+| 4 | P2_after_exec | True | 0 | 0 | 1 | True |
+| 4 | P3_after_commit | True | 0 | 0 | 0 | True |
+| 4 | P4_awaiting_approval | False | 0 | 0 | 0 | True |
+
+</details>
+
+### Crash sweep (unsafe mode, expected to fail)
+
+Source: `results/sweep_bank_5_unsafe_20261125T160839Z.json` (git `e5a5d75120`).
+
+| metric | value |
+|---|---|
+| points | 20 |
+| duplicates | 10 |
+| lost | 0 |
+| unknown surfaced | 0 |
+| recovery p50 (ms) | 2865 |
+| recovery p95 (ms) | 8232 |
+| recovery max (ms) | 8232 |
+
+<details><summary>Every point</summary>
+
+| step | point | crashed | dup | lost | unknown | pass |
+|---|---|---|---|---|---|---|
+| 0 | P1_after_planned | True | 0 | 0 | 0 | True |
+| 0 | P2_after_exec | True | 1 | 0 | 0 | False |
+| 0 | P3_after_commit | True | 1 | 0 | 0 | False |
+| 0 | P4_awaiting_approval | False | 0 | 0 | 0 | True |
+| 1 | P1_after_planned | True | 0 | 0 | 0 | True |
+| 1 | P2_after_exec | True | 1 | 0 | 0 | False |
+| 1 | P3_after_commit | True | 1 | 0 | 0 | False |
+| 1 | P4_awaiting_approval | False | 0 | 0 | 0 | True |
+| 2 | P1_after_planned | True | 0 | 0 | 0 | True |
+| 2 | P2_after_exec | True | 1 | 0 | 0 | False |
+| 2 | P3_after_commit | True | 1 | 0 | 0 | False |
+| 2 | P4_awaiting_approval | False | 0 | 0 | 0 | True |
+| 3 | P1_after_planned | True | 0 | 0 | 0 | True |
+| 3 | P2_after_exec | True | 1 | 0 | 0 | False |
+| 3 | P3_after_commit | True | 1 | 0 | 0 | False |
+| 3 | P4_awaiting_approval | False | 0 | 0 | 0 | True |
+| 4 | P1_after_planned | True | 0 | 0 | 0 | True |
+| 4 | P2_after_exec | True | 1 | 0 | 0 | False |
+| 4 | P3_after_commit | True | 1 | 0 | 0 | False |
+| 4 | P4_awaiting_approval | False | 0 | 0 | 0 | True |
+
+</details>
+
+### Security tests
+
+Source: `results/security_20261125T181724Z.json`.
+
+| metric | value |
+|---|---|
+| total | 51 |
+| blocked | 51 |
+| failed | 0 |
+
+### Fuzz
+
+Source: `results/fuzz_20261125T170212Z.json`.
+
+| metric | value |
+|---|---|
+| scenarios | 500 |
+| failures | 0 |
+| seed | 1974991925 |
+| max_recovery_ms | 15979 |
+
 <!-- results:end -->
 
 ## Limits

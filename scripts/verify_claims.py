@@ -54,7 +54,7 @@ DETAILS = re.compile(r"<details>.*?</details>", re.S)  # per-point tables are ge
 COMMENT = re.compile(r"<!--.*?-->", re.S)
 IDENT = re.compile(r"\b[A-Za-z]+\d+\b|\b\d+[A-Za-z]+\b|\b\d{4}-\d{2}-\d{2}\b|\b[0-9a-f]{7,40}\b")
 CONTEXT = re.compile(
-    r"\b(?:Node|Python|PostgreSQL|Postgres|Windows|OAuth|ES|section|sections|Phase|prompt|prompts|step|steps|P|E)\s+\d+(?:\.\d+)*\+?",
+    r"\b(?:Node|Python|PostgreSQL|Postgres|Windows|OAuth|SHA|ES|section|sections|Phase|prompt|prompts|step|steps|P|E)[\s-]+\d+(?:\.\d+)*\+?",
     re.I,
 )
 NUM = re.compile(r"(?<![\w.])\d+(?:\.\d+)?(?![\w])")
