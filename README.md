@@ -198,6 +198,23 @@ Source: `results/fuzz_20261125T170212Z.json`.
 | seed | 1974991925 |
 | max_recovery_ms | 15979 |
 
+### Load
+
+Source: `results/load_20261125T184150Z.json`.
+
+| metric | value |
+|---|---|
+| runs | 50 |
+| completed | 50 |
+| waiting_unknown | 0 |
+| kills | 5 |
+| duplicates | 0 |
+| lost | 0 |
+| unknown | 0 |
+| recovery_p50_ms | 772 |
+| recovery_p95_ms | 1297 |
+| recovery_max_ms | 3679 |
+
 <!-- results:end -->
 
 ## Limits

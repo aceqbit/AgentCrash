@@ -49,7 +49,8 @@ def main(argv: list[str] | None = None) -> int:
         path, report = load(args.runs, args.kills, Path(args.out), args.seed)
         print(f"report: {path}")
         print(json.dumps(report, indent=2))
-        return 0 if report["duplicates"] == 0 and report["lost"] == 0 else 1
+        ok = report["duplicates"] == 0 and report["lost"] == 0 and report["kills"] == args.kills
+        return 0 if ok else 1
     if args.cmd == "fuzz":
         from .fuzz import fuzz, replay
 

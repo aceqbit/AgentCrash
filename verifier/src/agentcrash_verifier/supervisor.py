@@ -139,7 +139,23 @@ def reset_mock() -> None:
     httpx.post(url("mock", "/_reset"), timeout=5).raise_for_status()
 
 
+def _kill_port_owners() -> None:
+    """Kill any process still listening on a stack port (orphans from an aborted run)."""
+    if sys.platform != "win32":
+        return
+    out = subprocess.run(["netstat", "-ano", "-p", "tcp"], capture_output=True, text=True, check=False)
+    ports = {f":{p}" for p in PORTS.values()}
+    pids: set[int] = set()
+    for line in out.stdout.splitlines():
+        cols = line.split()
+        if len(cols) >= 5 and cols[3] == "LISTENING" and any(cols[1].endswith(p) for p in ports):
+            pids.add(int(cols[4]))
+    for pid in pids:
+        subprocess.run(["taskkill", "/F", "/T", "/PID", str(pid)], capture_output=True, check=False)
+
+
 def kill_pidfiles() -> None:
+    _kill_port_owners()
     for pf in RUN_DIR.glob("*.pid"):
         pid = int(pf.read_text())
         if sys.platform == "win32":
