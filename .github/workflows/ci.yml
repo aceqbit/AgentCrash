@@ -7,6 +7,7 @@ on:
     - cron: '0 3 * * *'
 jobs:
   check:
+    if: github.event_name != 'schedule'
     runs-on: windows-latest
     timeout-minutes: 40
     defaults:
@@ -53,3 +54,43 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with: { name: results, path: results/*.json }
+
+  nightly-fuzz:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: windows-latest
+    timeout-minutes: 170
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      PGHOST: localhost
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGPASSWORD: postgres
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - uses: astral-sh/setup-uv@v5
+      - uses: extractions/setup-just@v2
+      - name: Start the preinstalled PostgreSQL and set the password
+        run: |
+          $svc = Get-Service | Where-Object Name -like 'postgresql*' | Select-Object -First 1
+          Set-Service $svc.Name -StartupType Manual
+          Start-Service $svc.Name
+          $bin = (Get-ChildItem 'C:\Program Files\PostgreSQL\*\bin\psql.exe' | Select-Object -First 1).DirectoryName
+          $env:PGPASSWORD = 'root'
+          & "$bin\psql.exe" -U postgres -d postgres -c "ALTER USER postgres PASSWORD 'postgres'"
+      - run: just setup
+      - name: random sweep (500 scenarios, seed printed in the log)
+        run: |
+          just fuzz 500 2>&1 | Tee-Object -FilePath fuzz.log
+          if ($LASTEXITCODE) { Get-Content fuzz.log -Tail 25 | ForEach-Object { Write-Host "::error::$_" }; exit 1 }
+      - name: Upload results and regressions
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fuzz
+          path: |
+            results/fuzz_*.json
+            verifier/regressions/*.yaml

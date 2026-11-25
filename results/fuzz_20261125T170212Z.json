@@ -1,0 +1,11 @@
+{
+  "git_sha": "4c49f51b8ad1fb55b4b105c3ff49f1bea68a5ce8",
+  "started": "2026-11-25T17:02:12.143315+00:00",
+  "seed": 1974991925,
+  "requested": 500,
+  "scenarios": 500,
+  "failures": 0,
+  "regression": null,
+  "max_recovery_ms": 15979,
+  "p95_recovery_ms": 8152
+}
