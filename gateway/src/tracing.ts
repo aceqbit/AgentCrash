@@ -74,6 +74,7 @@ export interface Tracing {
     parent?: Context,
   ): Promise<T>;
   runContext(runId: string): Context;
+  instant(runId: string, name: string, attrs: Attributes, parent?: Context): void;
 }
 
 /** trace id = run_id without dashes; the run span id is derived from run_id too. */
@@ -101,6 +102,9 @@ export function createTracing(opts: { file?: string; console?: boolean }): Traci
 
   return {
     runContext,
+    instant(runId, name, attrs, parent) {
+      tracer.startSpan(name, { attributes: { "run.id": runId, ...attrs } }, parent ?? runContext(runId)).end();
+    },
     runSpan(runId) {
       forcedSpanId = runSpanIdOf(runId);
       // Root span with the derived trace id: parent is a fake remote span, replaced below.
