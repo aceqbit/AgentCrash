@@ -1,0 +1,14 @@
+{
+  "agent-runtime": {
+    "secret_env": "AUTH_RUNTIME_SECRET",
+    "scopes": ["tool:transfer", "tool:create_ticket", "tool:get_balance", "tool:send_email", "tool:list_sent_emails"]
+  },
+  "agent-readonly": {
+    "secret_env": "AUTH_READONLY_SECRET",
+    "scopes": ["tool:get_balance", "tool:list_sent_emails"]
+  },
+  "operator": {
+    "secret_env": "AUTH_OPERATOR_SECRET",
+    "scopes": ["run:approve"]
+  }
+}
