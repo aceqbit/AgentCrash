@@ -7,7 +7,7 @@ const cfg = testConfig();
 
 beforeAll(async () => {
   await resetDb();
-  gw = await buildGateway(cfg);
+  gw = await buildGateway(cfg, { mcp: { call: async () => ({ ok: true }), close: async () => undefined } });
 });
 afterAll(async () => {
   await gw.close();
