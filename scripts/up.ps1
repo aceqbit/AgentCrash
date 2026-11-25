@@ -7,6 +7,10 @@ if (-not $exists) {
     psql -d postgres -c "CREATE DATABASE $Db"
     if ($LASTEXITCODE -ne 0) { throw 'create database failed' }
 }
-Write-Host "postgres ok, database $Db ready"
-# Background services (gateway, mock servers, runtime) are added in later prompts;
-# their PIDs are recorded in .run/*.pid so `just down` can stop them.
+if (-not (Test-Path "$PSScriptRoot/../.env")) { Copy-Item "$PSScriptRoot/../.env.example" "$PSScriptRoot/../.env" }
+& "$PSScriptRoot/migrate.ps1"
+& "$PSScriptRoot/build.ps1"
+if ($args -notcontains '-NoStack') {
+    uv --project "$PSScriptRoot/../verifier" run python -m agentcrash_verifier stack up
+    if ($LASTEXITCODE -ne 0) { throw 'stack failed to start' }
+}

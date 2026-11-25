@@ -11,6 +11,8 @@ import psycopg
 
 ROOT = Path(__file__).resolve().parents[3]
 RUN_DIR = ROOT / ".run"
+_VENV_BIN = "Scripts" if sys.platform == "win32" else "bin"
+RUNTIME_PY = ROOT / "runtime" / ".venv" / _VENV_BIN / ("python.exe" if sys.platform == "win32" else "python")
 PORTS = {"mock": 7101, "gateway": 7102, "runtime": 7103, "auth": 7104}
 DB_URL = os.environ.get("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/agentcrash")
 
@@ -65,7 +67,7 @@ def start_gateway(env: dict[str, str] | None = None, wait: bool = True) -> subpr
 
 def start_runtime(env: dict[str, str] | None = None) -> subprocess.Popen[bytes]:
     e = {"RUNTIME_PORT": str(PORTS["runtime"]), "GATEWAY_URL": url("gateway"), "DATABASE_URL": DB_URL, **(env or {})}
-    p = _spawn("runtime", [sys.executable, "-m", "agentcrash_runtime"], e)
+    p = _spawn("runtime", [str(RUNTIME_PY), "-m", "agentcrash_runtime"], e)
     wait_http(url("runtime", "/health"), timeout=60)
     return p
 
