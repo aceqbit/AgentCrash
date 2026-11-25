@@ -49,6 +49,9 @@ export interface GatewayDeps {
 
 class UnexpectedState extends Error {}
 
+/** Keys journaled by this process; anything else found in the journal predates a restart. */
+const touched = new Set<string>();
+
 export async function buildGateway(cfg: Config, deps: GatewayDeps = {}): Promise<Gateway> {
   const pool = new pg.Pool({ connectionString: cfg.databaseUrl, max: 60 });
   pool.on("error", (e) => console.error("pg pool error", e));
@@ -400,7 +403,9 @@ export async function buildGateway(cfg: Config, deps: GatewayDeps = {}): Promise
           );
           if ("status" in planned) return planned;
           const { fresh } = planned;
-          const recovering = !fresh;
+          if (fresh) touched.add(key);
+          // Recovering = the row was journaled by an earlier process (a restart), not a continuation here.
+          const recovering = !touched.has(key);
           fire("P1_after_planned", runId, stepNo, recovering, stepCtx);
           const res = await withLock(c, key, true, () => advance(c, key, recovering, stepCtx));
           return res as Outcome;

@@ -25,10 +25,10 @@ build:
     powershell -NoProfile -File scripts/build.ps1
 
 sweep SCENARIO="bank_5":
-    @Write-Host "not implemented"; exit 1
+    powershell -NoProfile -File scripts/sweep.ps1 -Scenario {{SCENARIO}}
 
 sweep-unsafe:
-    @Write-Host "not implemented"; exit 1
+    powershell -NoProfile -File scripts/sweep.ps1 -Unsafe
 
 fuzz N="500":
     @Write-Host "not implemented"; exit 1
