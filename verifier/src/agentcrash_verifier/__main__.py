@@ -16,12 +16,27 @@ def main(argv: list[str] | None = None) -> int:
     sw = sub.add_parser("sweep")
     sw.add_argument("--scenario", default="bank_5")
     sw.add_argument("--unsafe", action="store_true")
+    sw.add_argument("--double", action="store_true", help="kill again during recovery")
     sw.add_argument("--out", default=str(sup.ROOT / "results"))
+    fz = sub.add_parser("fuzz")
+    fz.add_argument("--n", type=int, default=500)
+    fz.add_argument("--seed", type=int, default=None)
+    fz.add_argument("--replay", default=None, help="replay a file from verifier/regressions")
+    fz.add_argument("--out", default=str(sup.ROOT / "results"))
     args = ap.parse_args(argv)
+    if args.cmd == "fuzz":
+        from .fuzz import fuzz, replay
+
+        if args.replay:
+            return 0 if replay(Path(args.replay)) else 1
+        path, report = fuzz(args.n, args.seed, Path(args.out))
+        print(f"report: {path}")
+        print(json.dumps(report, indent=2))
+        return 0 if report["failures"] == 0 else 1
     if args.cmd == "sweep":
         from .sweep import sweep
 
-        path, report = sweep(args.scenario, args.unsafe, Path(args.out))
+        path, report = sweep(args.scenario, args.unsafe, Path(args.out), double=args.double)
         print(f"report: {path}")
         print(json.dumps(report["summary"], indent=2))
         # CI gate: any duplicate or lost effect fails (E1, E2, E3).

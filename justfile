@@ -33,8 +33,8 @@ sweep SCENARIO="bank_5":
 sweep-unsafe:
     powershell -NoProfile -File scripts/sweep.ps1 -Unsafe
 
-fuzz N="500":
-    @Write-Host "not implemented"; exit 1
+fuzz N="500" SEED="":
+    powershell -NoProfile -File scripts/fuzz.ps1 -N {{N}} -Seed '{{SEED}}'
 
 demo:
     @Write-Host "not implemented"; exit 1
@@ -44,4 +44,8 @@ report:
 
 check:
     powershell -NoProfile -File scripts/check.ps1
+
+
+sweep-double SCENARIO="bank_5":
+    powershell -NoProfile -File scripts/sweep.ps1 -Scenario {{SCENARIO}} -Double
 

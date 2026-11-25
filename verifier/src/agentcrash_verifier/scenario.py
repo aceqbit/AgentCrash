@@ -2,13 +2,16 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
 import yaml
 
-SCENARIO_DIR = Path(__file__).resolve().parents[2] / "scenarios"
+SCENARIO_DIR = Path(
+    os.environ.get("SCENARIO_DIR") or Path(__file__).resolve().parents[2] / "scenarios"
+)
 IDEMPOTENT = {"transfer", "create_ticket"}
 
 
@@ -51,5 +54,8 @@ def parse_scenario(doc: dict[str, Any]) -> Scenario:
     return Scenario(doc["name"], int(doc.get("seed", 0)), steps)
 
 
-def load_scenario(name: str, directory: Path = SCENARIO_DIR) -> Scenario:
-    return parse_scenario(yaml.safe_load((directory / f"{name}.yaml").read_text(encoding="utf-8")))
+def load_scenario(name: str, directory: Path | None = None) -> Scenario:
+    d = directory or Path(
+        os.environ.get("SCENARIO_DIR") or Path(__file__).resolve().parents[2] / "scenarios"
+    )
+    return parse_scenario(yaml.safe_load((d / f"{name}.yaml").read_text(encoding="utf-8")))
