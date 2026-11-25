@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "vitest run --passWithNoTests"
+    "build": "tsc -p tsconfig.build.json", "test": "vitest run --passWithNoTests"
   },
   "devDependencies": {
     "@types/node": "^26.6.10",
