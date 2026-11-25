@@ -1,5 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { execFileSync } from "node:child_process";
+import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import ts from "typescript";
 import { canonicalJson, idempotencyKey } from "../src/canonical.js";
 
 describe("canonicalJson", () => {
@@ -31,11 +35,14 @@ describe("idempotencyKey", () => {
     expect(idempotencyKey(run, 0, "t", {})).toMatch(/^[0-9a-f]{64}$/);
   });
   it("is stable across process restarts", () => {
-    const code = `import {idempotencyKey} from "./src/canonical.ts";process.stdout.write(idempotencyKey("${run}",3,"transfer",{b:1,a:[1,2]}))`;
-    const out = (): string =>
-      execFileSync(process.execPath, ["--experimental-strip-types", "--no-warnings", "--input-type=module", "-e", code], {
-        encoding: "utf8",
-      });
+    // Transpile the real source and run it in fresh node processes (works on Node 20, no type stripping).
+    const src = readFileSync(join(import.meta.dirname, "..", "src", "canonical.ts"), "utf8");
+    const js = ts.transpileModule(src, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText;
+    const dir = mkdtempSync(join(tmpdir(), "canon-"));
+    writeFileSync(join(dir, "canonical.mjs"), js);
+    const code = `import {idempotencyKey} from "./canonical.mjs";process.stdout.write(idempotencyKey("${run}",3,"transfer",{b:1,a:[1,2]}))`;
+    writeFileSync(join(dir, "run.mjs"), code);
+    const out = (): string => execFileSync(process.execPath, [join(dir, "run.mjs")], { encoding: "utf8" });
     expect(out()).toBe(out());
     expect(out()).toBe(idempotencyKey(run, 3, "transfer", { a: [1, 2], b: 1 }));
   });
