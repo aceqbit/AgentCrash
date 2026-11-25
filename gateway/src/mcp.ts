@@ -29,7 +29,7 @@ export function createMcpCaller(url: string): McpCaller {
       }
       let res;
       try {
-        res = await c.callTool({ name: tool, arguments: args, ...(key ? { _meta: { [KEY_META]: key } } : {}) });
+        res = await c.callTool({ name: tool, arguments: args, ...(key && process.env.DEMO_SEND_KEY === "1" ? { _meta: { [KEY_META]: key } } : {}) /* demo: key not sent */ });
       } catch (e) {
         client = undefined;
         void c.close().catch(() => undefined);
