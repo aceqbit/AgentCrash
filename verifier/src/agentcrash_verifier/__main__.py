@@ -23,7 +23,33 @@ def main(argv: list[str] | None = None) -> int:
     fz.add_argument("--seed", type=int, default=None)
     fz.add_argument("--replay", default=None, help="replay a file from verifier/regressions")
     fz.add_argument("--out", default=str(sup.ROOT / "results"))
+    ld = sub.add_parser("load")
+    ld.add_argument("--runs", type=int, default=50)
+    ld.add_argument("--kills", type=int, default=5)
+    ld.add_argument("--seed", type=int, default=7)
+    ld.add_argument("--out", default=str(sup.ROOT / "results"))
+    bn = sub.add_parser("bench")
+    bn.add_argument("label", choices=["before", "after", "merge"])
+    bn.add_argument("--calls", type=int, default=1000)
+    bn.add_argument("--out", default=str(sup.ROOT / "results"))
     args = ap.parse_args(argv)
+    if args.cmd == "bench":
+        from .bench import merge, run_label
+
+        if args.label == "merge":
+            path, res = merge(Path(args.out))
+        else:
+            path, res = run_label(args.label, args.calls, Path(args.out))
+        print(f"report: {path}")
+        print(json.dumps(res, indent=2))
+        return 0
+    if args.cmd == "load":
+        from .load import load
+
+        path, report = load(args.runs, args.kills, Path(args.out), args.seed)
+        print(f"report: {path}")
+        print(json.dumps(report, indent=2))
+        return 0 if report["duplicates"] == 0 and report["lost"] == 0 else 1
     if args.cmd == "fuzz":
         from .fuzz import fuzz, replay
 

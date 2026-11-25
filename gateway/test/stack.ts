@@ -73,6 +73,23 @@ export class TestStack {
     return p;
   }
 
+  /** Another gateway instance on its own port, sharing the same database and mock server. */
+  async startExtraGateway(env: Record<string, string> = {}): Promise<{ proc: Proc; port: number }> {
+    const port = randomPort();
+    const proc = start("gateway/dist/index.js", {
+      GATEWAY_PORT: String(port),
+      DATABASE_URL: DB_URL,
+      MCP_URL: `${this.mockUrl}/mcp`,
+      TRACES_FILE: join(this.dir, `traces-${port}.jsonl`),
+      ...env,
+    });
+    await waitHttp(`http://127.0.0.1:${port}/health`);
+    this.extra.push(proc);
+    return { proc, port };
+  }
+
+  extra: Proc[] = [];
+
   crashMarker(): { point: string; step: number } | undefined {
     return existsSync(this.marker) ? (JSON.parse(readFileSync(this.marker, "utf8")) as { point: string; step: number }) : undefined;
   }
@@ -84,7 +101,8 @@ export class TestStack {
   async stop(): Promise<void> {
     this.gw?.child.kill();
     this.mock?.child.kill();
-    await Promise.all([this.gw?.exited, this.mock?.exited]);
+    for (const e of this.extra) e.child.kill();
+    await Promise.all([this.gw?.exited, this.mock?.exited, ...this.extra.map((e) => e.exited)]);
   }
 }
 

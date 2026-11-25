@@ -50,3 +50,9 @@ sweep-double SCENARIO="bank_5":
     powershell -NoProfile -File scripts/sweep.ps1 -Scenario {{SCENARIO}} -Double
 
 
+
+load RUNS="50" KILLS="5":
+    powershell -NoProfile -File scripts/load.ps1 -Runs {{RUNS}} -Kills {{KILLS}}
+
+bench LABEL="after":
+    powershell -NoProfile -File scripts/bench.ps1 -Label {{LABEL}}

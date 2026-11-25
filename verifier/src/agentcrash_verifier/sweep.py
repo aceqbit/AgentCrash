@@ -189,7 +189,7 @@ def run_point(
         MARKER.unlink(missing_ok=True)
         gw = sup.start_gateway({**_gw_env(unsafe, spec), "CRASH_ON_RECOVERY": "1"}, wait=False)
         _wait_up_or_dead(gw)
-        if _wait_death(gw, run_id, step, point, 8):
+        if _wait_death(gw, run_id, step, point, 2.5):
             crashes = 2
     if crashes and gw.poll() is not None:
         gw = sup.start_gateway(_gw_env(unsafe, None))

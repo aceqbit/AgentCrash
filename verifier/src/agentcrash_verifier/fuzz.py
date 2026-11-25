@@ -5,6 +5,7 @@ import json
 import os
 import random
 import tempfile
+import time
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -134,7 +135,9 @@ def fuzz(n: int, seed_value: int | None, out_dir: Path) -> tuple[Path, dict[str,
     @given(case_st())
     def prop(case: dict[str, Any]) -> None:
         stats["ran"] += 1
+        t0 = time.time()
         ok, detail, rec = run_case(tmp, case)
+        print(f"fuzz case {stats['ran']}: {detail} [{time.time() - t0:.1f}s]", flush=True)
         if rec:
             stats["recovery"].append(rec)
         if not ok:
