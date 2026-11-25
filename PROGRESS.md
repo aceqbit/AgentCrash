@@ -10,3 +10,4 @@ P1.6 done 2026-11-25
 P1.7 done 2026-11-25
 P1.8 done 2026-11-25 (CI run URLs: see docs/ci-proof.md)
 P2.1 done 2026-11-25 (Keycloak replaced by in-repo token endpoint, D3)
+P2.2 done 2026-11-25
