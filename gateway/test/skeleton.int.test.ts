@@ -51,6 +51,7 @@ describe("gateway skeleton", () => {
       url: `/v1/runs/${run.run_id}/steps/0/call`,
       payload: { tool: "create_ticket", args: { title: "t" } },
     });
+    gw.tracing.flush();
     const traceId = (run.run_id as string).replace(/-/g, "");
     const spans = readSpans(cfg.tracesFile).filter((s) => s.trace_id === traceId);
     const by = (n: string) => spans.find((s) => s.name === n);

@@ -1,0 +1,11 @@
+{
+  "git_sha": "b95848221121a0d4e7e43671a480ddeb9b2a3088",
+  "label": "after",
+  "calls": 1000,
+  "journal_p50_ms": 21.957,
+  "journal_p95_ms": 32.112,
+  "passthrough_p50_ms": 9.907,
+  "passthrough_p95_ms": 17.473,
+  "overhead_p50_ms": 12.05,
+  "overhead_p95_ms": 14.639
+}

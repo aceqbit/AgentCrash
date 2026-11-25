@@ -179,7 +179,7 @@ Source: `results/sweep_bank_5_unsafe_20261125T160839Z.json` (git `e5a5d75120`).
 
 ### Security tests
 
-Source: `results/security_20261125T181724Z.json`.
+Source: `results/security_20261125T184811Z.json`.
 
 | metric | value |
 |---|---|
@@ -214,6 +214,15 @@ Source: `results/load_20261125T184150Z.json`.
 | recovery_p50_ms | 772 |
 | recovery_p95_ms | 1297 |
 | recovery_max_ms | 3679 |
+
+### Journal overhead
+
+Source: `results/bench_20261125T185216Z.json` (git `b958482211`), 1000 calls per mode.
+
+| run | journal p50 | journal p95 | passthrough p50 | passthrough p95 | overhead p50 | overhead p95 |
+|---|---|---|---|---|---|---|
+| before | 28.134 | 50.27 | 11.978 | 25.631 | 16.156 | 24.639 |
+| after | 21.957 | 32.112 | 9.907 | 17.473 | 12.05 | 14.639 |
 
 <!-- results:end -->
 

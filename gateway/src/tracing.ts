@@ -32,13 +32,29 @@ class Ids implements IdGenerator {
   }
 }
 
-/** Appends one JSON line per finished span (sync, so a SIGKILL right after still leaves it on disk). */
+/**
+ * Appends one JSON line per finished span. Lines are buffered and written in one append every few ms;
+ * `flush()` writes synchronously and is called before a crash hook kills the process, so the spans
+ * leading up to a crash still reach the file.
+ */
 class JsonlExporter implements SpanExporter {
+  private buf: string[] = [];
+  private timer: NodeJS.Timeout | undefined;
   constructor(
     private readonly file: string | undefined,
     private readonly consoleOut: boolean,
   ) {
     if (file) mkdirSync(dirname(file), { recursive: true });
+    process.on("exit", () => this.flush());
+  }
+  flush(): void {
+    if (this.timer) clearTimeout(this.timer);
+    this.timer = undefined;
+    if (this.file && this.buf.length > 0) {
+      const chunk = this.buf.join("");
+      this.buf = [];
+      appendFileSync(this.file, chunk);
+    }
   }
   export(spans: ReadableSpan[], done: (r: { code: number }) => void): void {
     for (const s of spans) {
@@ -60,6 +76,7 @@ class JsonlExporter implements SpanExporter {
     done({ code: 0 });
   }
   shutdown(): Promise<void> {
+    this.flush();
     return Promise.resolve();
   }
 }
@@ -75,6 +92,8 @@ export interface Tracing {
   ): Promise<T>;
   runContext(runId: string): Context;
   instant(runId: string, name: string, attrs: Attributes, parent?: Context): void;
+  /** Write buffered spans to disk now (synchronously). */
+  flush(): void;
 }
 
 /** trace id = run_id without dashes; the run span id is derived from run_id too. */
@@ -86,9 +105,10 @@ export function runSpanIdOf(runId: string): string {
 }
 
 export function createTracing(opts: { file?: string; console?: boolean }): Tracing {
+  const exporter = new JsonlExporter(opts.file, opts.console ?? false);
   const provider = new BasicTracerProvider({
     idGenerator: new Ids(),
-    spanProcessors: [new SimpleSpanProcessor(new JsonlExporter(opts.file, opts.console ?? false))],
+    spanProcessors: [new SimpleSpanProcessor(exporter)],
   });
   const tracer = provider.getTracer("agentcrash-gateway");
 
@@ -101,6 +121,7 @@ export function createTracing(opts: { file?: string; console?: boolean }): Traci
     });
 
   return {
+    flush: () => exporter.flush(),
     runContext,
     instant(runId, name, attrs, parent) {
       tracer.startSpan(name, { attributes: { "run.id": runId, ...attrs } }, parent ?? runContext(runId)).end();

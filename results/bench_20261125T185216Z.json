@@ -1,0 +1,32 @@
+{
+  "git_sha": "b95848221121a0d4e7e43671a480ddeb9b2a3088",
+  "calls": 1000,
+  "before": {
+    "git_sha": "b95848221121a0d4e7e43671a480ddeb9b2a3088",
+    "label": "before",
+    "calls": 1000,
+    "journal_p50_ms": 28.134,
+    "journal_p95_ms": 50.27,
+    "passthrough_p50_ms": 11.978,
+    "passthrough_p95_ms": 25.631,
+    "overhead_p50_ms": 16.156,
+    "overhead_p95_ms": 24.639
+  },
+  "after": {
+    "git_sha": "b95848221121a0d4e7e43671a480ddeb9b2a3088",
+    "label": "after",
+    "calls": 1000,
+    "journal_p50_ms": 21.957,
+    "journal_p95_ms": 32.112,
+    "passthrough_p50_ms": 9.907,
+    "passthrough_p95_ms": 17.473,
+    "overhead_p50_ms": 12.05,
+    "overhead_p95_ms": 14.639
+  },
+  "recovery": {
+    "source": "sweep_bank_5_20261125T160523Z.json",
+    "p50_ms": 2840,
+    "p95_ms": 3256,
+    "max_ms": 3256
+  }
+}
