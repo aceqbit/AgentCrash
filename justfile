@@ -21,6 +21,9 @@ test:
 integration:
     powershell -NoProfile -File scripts/integration.ps1
 
+setup:
+    powershell -NoProfile -File scripts/setup.ps1
+
 build:
     powershell -NoProfile -File scripts/build.ps1
 
@@ -37,7 +40,8 @@ demo:
     @Write-Host "not implemented"; exit 1
 
 report:
-    @Write-Host "not implemented"; exit 1
+    uv --project verifier run python scripts/report.py
 
 check:
-    @Write-Host "not implemented"; exit 1
+    powershell -NoProfile -File scripts/check.ps1
+

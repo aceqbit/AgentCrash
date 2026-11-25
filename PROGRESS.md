@@ -8,3 +8,4 @@ P1.4 done 2026-11-25
 P1.5 done 2026-11-25
 P1.6 done 2026-11-25
 P1.7 done 2026-11-25
+P1.8 done 2026-11-25 (CI run URLs: see docs/ci-proof.md)

@@ -1,5 +1,6 @@
 $ErrorActionPreference = 'Stop'
 . "$PSScriptRoot/_pg.ps1"
+& "$PSScriptRoot/setup.ps1"
 # Only the agentcrash database is created; other databases are never touched.
 $exists = psql -d postgres -tAc "SELECT 1 FROM pg_database WHERE datname='$Db'"
 if ($LASTEXITCODE -ne 0) { throw 'cannot reach PostgreSQL on localhost:5432' }

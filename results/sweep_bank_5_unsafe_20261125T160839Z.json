@@ -1,0 +1,319 @@
+{
+  "scenario": "bank_5",
+  "mode": "unsafe",
+  "git_sha": "e5a5d7512096bb87f5e2280c114b96ff9048d09d",
+  "started": "2026-11-25T16:08:39.453695+00:00",
+  "rows": [
+    {
+      "step": 0,
+      "point": "P1_after_planned",
+      "crashed": true,
+      "duplicates": 0,
+      "lost": 0,
+      "unknown": 0,
+      "recovery_ms": 3830,
+      "duplicate_tools": [],
+      "end_status": "DONE",
+      "pass": true
+    },
+    {
+      "step": 0,
+      "point": "P2_after_exec",
+      "crashed": true,
+      "duplicates": 1,
+      "lost": 0,
+      "unknown": 0,
+      "recovery_ms": 3106,
+      "duplicate_tools": [
+        "transfer"
+      ],
+      "end_status": "DONE",
+      "pass": false
+    },
+    {
+      "step": 0,
+      "point": "P3_after_commit",
+      "crashed": true,
+      "duplicates": 1,
+      "lost": 0,
+      "unknown": 0,
+      "recovery_ms": 2865,
+      "duplicate_tools": [
+        "transfer"
+      ],
+      "end_status": "DONE",
+      "pass": false
+    },
+    {
+      "step": 0,
+      "point": "P4_awaiting_approval",
+      "crashed": false,
+      "duplicates": 0,
+      "lost": 0,
+      "unknown": 0,
+      "recovery_ms": 0,
+      "duplicate_tools": [],
+      "end_status": "DONE",
+      "pass": true
+    },
+    {
+      "step": 1,
+      "point": "P1_after_planned",
+      "crashed": true,
+      "duplicates": 0,
+      "lost": 0,
+      "unknown": 0,
+      "recovery_ms": 3248,
+      "duplicate_tools": [],
+      "end_status": "DONE",
+      "pass": true
+    },
+    {
+      "step": 1,
+      "point": "P2_after_exec",
+      "crashed": true,
+      "duplicates": 1,
+      "lost": 0,
+      "unknown": 0,
+      "recovery_ms": 3801,
+      "duplicate_tools": [
+        "create_ticket"
+      ],
+      "end_status": "DONE",
+      "pass": false
+    },
+    {
+      "step": 1,
+      "point": "P3_after_commit",
+      "crashed": true,
+      "duplicates": 1,
+      "lost": 0,
+      "unknown": 0,
+      "recovery_ms": 3060,
+      "duplicate_tools": [
+        "create_ticket"
+      ],
+      "end_status": "DONE",
+      "pass": false
+    },
+    {
+      "step": 1,
+      "point": "P4_awaiting_approval",
+      "crashed": false,
+      "duplicates": 0,
+      "lost": 0,
+      "unknown": 0,
+      "recovery_ms": 0,
+      "duplicate_tools": [],
+      "end_status": "DONE",
+      "pass": true
+    },
+    {
+      "step": 2,
+      "point": "P1_after_planned",
+      "crashed": true,
+      "duplicates": 0,
+      "lost": 0,
+      "unknown": 0,
+      "recovery_ms": 2824,
+      "duplicate_tools": [],
+      "end_status": "DONE",
+      "pass": true
+    },
+    {
+      "step": 2,
+      "point": "P2_after_exec",
+      "crashed": true,
+      "duplicates": 1,
+      "lost": 0,
+      "unknown": 0,
+      "recovery_ms": 2539,
+      "duplicate_tools": [
+        "send_email"
+      ],
+      "end_status": "DONE",
+      "pass": false
+    },
+    {
+      "step": 2,
+      "point": "P3_after_commit",
+      "crashed": true,
+      "duplicates": 1,
+      "lost": 0,
+      "unknown": 0,
+      "recovery_ms": 3088,
+      "duplicate_tools": [
+        "send_email"
+      ],
+      "end_status": "DONE",
+      "pass": false
+    },
+    {
+      "step": 2,
+      "point": "P4_awaiting_approval",
+      "crashed": false,
+      "duplicates": 0,
+      "lost": 0,
+      "unknown": 0,
+      "recovery_ms": 0,
+      "duplicate_tools": [],
+      "end_status": "DONE",
+      "pass": true
+    },
+    {
+      "step": 3,
+      "point": "P1_after_planned",
+      "crashed": true,
+      "duplicates": 0,
+      "lost": 0,
+      "unknown": 0,
+      "recovery_ms": 2301,
+      "duplicate_tools": [],
+      "end_status": "DONE",
+      "pass": true
+    },
+    {
+      "step": 3,
+      "point": "P2_after_exec",
+      "crashed": true,
+      "duplicates": 1,
+      "lost": 0,
+      "unknown": 0,
+      "recovery_ms": 2284,
+      "duplicate_tools": [
+        "transfer"
+      ],
+      "end_status": "DONE",
+      "pass": false
+    },
+    {
+      "step": 3,
+      "point": "P3_after_commit",
+      "crashed": true,
+      "duplicates": 1,
+      "lost": 0,
+      "unknown": 0,
+      "recovery_ms": 2292,
+      "duplicate_tools": [
+        "transfer"
+      ],
+      "end_status": "DONE",
+      "pass": false
+    },
+    {
+      "step": 3,
+      "point": "P4_awaiting_approval",
+      "crashed": false,
+      "duplicates": 0,
+      "lost": 0,
+      "unknown": 0,
+      "recovery_ms": 0,
+      "duplicate_tools": [],
+      "end_status": "DONE",
+      "pass": true
+    },
+    {
+      "step": 4,
+      "point": "P1_after_planned",
+      "crashed": true,
+      "duplicates": 0,
+      "lost": 0,
+      "unknown": 0,
+      "recovery_ms": 8232,
+      "duplicate_tools": [],
+      "end_status": "DONE",
+      "pass": true
+    },
+    {
+      "step": 4,
+      "point": "P2_after_exec",
+      "crashed": true,
+      "duplicates": 1,
+      "lost": 0,
+      "unknown": 0,
+      "recovery_ms": 2659,
+      "duplicate_tools": [
+        "send_email"
+      ],
+      "end_status": "DONE",
+      "pass": false
+    },
+    {
+      "step": 4,
+      "point": "P3_after_commit",
+      "crashed": true,
+      "duplicates": 1,
+      "lost": 0,
+      "unknown": 0,
+      "recovery_ms": 2778,
+      "duplicate_tools": [
+        "send_email"
+      ],
+      "end_status": "DONE",
+      "pass": false
+    },
+    {
+      "step": 4,
+      "point": "P4_awaiting_approval",
+      "crashed": false,
+      "duplicates": 0,
+      "lost": 0,
+      "unknown": 0,
+      "recovery_ms": 0,
+      "duplicate_tools": [],
+      "end_status": "DONE",
+      "pass": true
+    }
+  ],
+  "summary": {
+    "points": 20,
+    "duplicates": 10,
+    "lost": 0,
+    "unknown": 0,
+    "max_recovery_ms": 8232,
+    "p50_recovery_ms": 2865,
+    "p95_recovery_ms": 8232,
+    "failed_points": [
+      [
+        0,
+        "P2_after_exec"
+      ],
+      [
+        0,
+        "P3_after_commit"
+      ],
+      [
+        1,
+        "P2_after_exec"
+      ],
+      [
+        1,
+        "P3_after_commit"
+      ],
+      [
+        2,
+        "P2_after_exec"
+      ],
+      [
+        2,
+        "P3_after_commit"
+      ],
+      [
+        3,
+        "P2_after_exec"
+      ],
+      [
+        3,
+        "P3_after_commit"
+      ],
+      [
+        4,
+        "P2_after_exec"
+      ],
+      [
+        4,
+        "P3_after_commit"
+      ]
+    ]
+  }
+}
