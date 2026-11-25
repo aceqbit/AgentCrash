@@ -68,7 +68,10 @@ export async function buildGateway(cfg: Config, deps: GatewayDeps = {}): Promise
     recovering: boolean,
     ctx?: Context,
   ): void => {
-    hooks.fire(point, step, recovering, () => tracing.instant(run, "crash", { "crash.point": point, "step.no": step }, ctx));
+    hooks.fire(point, step, recovering, () => {
+      tracing.instant(run, "crash", { "crash.point": point, "step.no": step }, ctx);
+      tracing.flush(); // buffered spans must reach the file before SIGKILL
+    });
   };
 
   // ---- journal helpers (explicit transactions, no ORM) ---------------------------------
@@ -101,23 +104,17 @@ export async function buildGateway(cfg: Config, deps: GatewayDeps = {}): Promise
       "journal.done",
       { "step.no": row.step_no, tool: row.tool, "call.state": "DONE", idempotency_key: row.idempotency_key.slice(0, 12) },
       async () => {
-        await c.query("BEGIN");
-        try {
-          const u = await c.query(
-            "UPDATE tool_calls SET state = 'DONE', result = $2, updated_at = now() WHERE idempotency_key = $1 AND state IN ('SENT','PLANNED')",
-            [row.idempotency_key, JSON.stringify(result)],
-          );
-          if (u.rowCount === 1) {
-            await c.query("UPDATE runs SET step_no = step_no + 1, updated_at = now() WHERE run_id = $1 AND step_no = $2", [
-              row.run_id,
-              row.step_no,
-            ]);
-          }
-          await c.query("COMMIT");
-        } catch (e) {
-          await c.query("ROLLBACK").catch(() => undefined);
-          throw e;
-        }
+        // A single statement is a single transaction: DONE + result + the guarded step_no advance.
+        await c.query({
+          name: "finish_done",
+          text: `WITH u AS (
+                   UPDATE tool_calls SET state = 'DONE', result = $2, updated_at = now()
+                   WHERE idempotency_key = $1 AND state IN ('SENT','PLANNED')
+                   RETURNING run_id, step_no)
+                 UPDATE runs SET step_no = runs.step_no + 1, updated_at = now()
+                 FROM u WHERE runs.run_id = u.run_id AND runs.step_no = u.step_no`,
+          values: [row.idempotency_key, JSON.stringify(result)],
+        });
       },
       ctx,
     );
@@ -138,9 +135,11 @@ export async function buildGateway(cfg: Config, deps: GatewayDeps = {}): Promise
       "journal.sent",
       spanAttrs(row, { "call.state": "SENT" }),
       async () => {
-        await c.query("UPDATE tool_calls SET state = 'SENT', attempts = attempts + 1, updated_at = now() WHERE idempotency_key = $1", [
-          row.idempotency_key,
-        ]);
+        await c.query({
+          name: "mark_sent",
+          text: "UPDATE tool_calls SET state = 'SENT', attempts = attempts + 1, updated_at = now() WHERE idempotency_key = $1",
+          values: [row.idempotency_key],
+        });
       },
       ctx,
     );
@@ -189,9 +188,8 @@ export async function buildGateway(cfg: Config, deps: GatewayDeps = {}): Promise
   }
 
   /** Apply the recovery table to one row. Caller holds the row's advisory lock. */
-  async function advance(c: pg.PoolClient, key: string, recovering: boolean, ctx: Context): Promise<Outcome> {
-    const { rows } = await c.query<Row>("SELECT * FROM tool_calls WHERE idempotency_key = $1", [key]);
-    const row = rows[0];
+  async function advance(c: pg.PoolClient, key: string, recovering: boolean, ctx: Context, known?: Row): Promise<Outcome> {
+    const row = known ?? (await c.query<Row>({ name: "read_call", text: "SELECT * FROM tool_calls WHERE idempotency_key = $1", values: [key] })).rows[0];
     if (!row) throw new UnexpectedState(`no row for key ${key.slice(0, 12)}`);
     switch (row.state) {
       case "DONE":
@@ -219,13 +217,15 @@ export async function buildGateway(cfg: Config, deps: GatewayDeps = {}): Promise
   }
 
   async function withLock<T>(c: pg.PoolClient, key: string, blocking: boolean, fn: () => Promise<T>): Promise<T | undefined> {
-    const q = blocking ? "SELECT pg_advisory_lock(hashtextextended($1, 0)), true AS ok" : "SELECT pg_try_advisory_lock(hashtextextended($1, 0)) AS ok";
-    const r = await c.query(q, [key]);
+    const q = blocking
+      ? { name: "lock_wait", text: "SELECT pg_advisory_lock(hashtextextended($1, 0)), true AS ok", values: [key] }
+      : { name: "lock_try", text: "SELECT pg_try_advisory_lock(hashtextextended($1, 0)) AS ok", values: [key] };
+    const r = await c.query(q);
     if (!r.rows[0].ok) return undefined;
     try {
       return await fn();
     } finally {
-      await c.query("SELECT pg_advisory_unlock(hashtextextended($1, 0))", [key]).catch(() => undefined);
+      await c.query({ name: "unlock", text: "SELECT pg_advisory_unlock(hashtextextended($1, 0))", values: [key] }).catch(() => undefined);
     }
   }
 
@@ -373,22 +373,28 @@ export async function buildGateway(cfg: Config, deps: GatewayDeps = {}): Promise
             async (span): Promise<{ row: Row; fresh: boolean } | Outcome> => {
               await c.query("BEGIN");
               try {
-                const run = await c.query("SELECT status, step_no FROM runs WHERE run_id = $1", [runId]);
-                if (run.rowCount === 0) {
-                  await c.query("ROLLBACK");
-                  return { status: 404, body: { error: "no such run" } };
-                }
-                const ins = await c.query(
-                  `INSERT INTO tool_calls (idempotency_key, run_id, step_no, tool, args, state, requires_approval, probe)
-                   SELECT $1, $2, $3, $4, $5, 'PLANNED', $6, $7
-                   WHERE $3 <= (SELECT step_no FROM runs WHERE run_id = $2)
-                   ON CONFLICT DO NOTHING`,
-                  [key, runId, stepNo, tool, JSON.stringify(a), requires_approval === true, typeof probe === "string" ? probe : null],
-                );
-                const r = await c.query<Row>("SELECT * FROM tool_calls WHERE run_id = $1 AND step_no = $2", [runId, stepNo]);
+                const ins = await c.query({
+                  name: "plan_insert",
+                  text: `INSERT INTO tool_calls (idempotency_key, run_id, step_no, tool, args, state, requires_approval, probe)
+                         SELECT $1, $2, $3, $4, $5, 'PLANNED', $6, $7
+                         WHERE $3 <= (SELECT step_no FROM runs WHERE run_id = $2)
+                         ON CONFLICT DO NOTHING`,
+                  values: [key, runId, stepNo, tool, JSON.stringify(a), requires_approval === true, typeof probe === "string" ? probe : null],
+                });
+                const r = await c.query<Row>({
+                  name: "plan_read",
+                  text: "SELECT * FROM tool_calls WHERE run_id = $1 AND step_no = $2",
+                  values: [runId, stepNo],
+                });
                 await c.query("COMMIT");
                 const row = r.rows[0];
-                if (!row) return { status: 409, body: { error: "step is ahead of the run" } };
+                if (!row) {
+                  // Rare path: tell an unknown run from a step that is ahead of the run.
+                  const run = await c.query("SELECT 1 FROM runs WHERE run_id = $1", [runId]);
+                  return run.rowCount === 0
+                    ? { status: 404, body: { error: "no such run" } }
+                    : { status: 409, body: { error: "step is ahead of the run" } };
+                }
                 if (row.idempotency_key !== key) {
                   return { status: 409, body: { error: "step already journaled with different input" } };
                 }
@@ -407,7 +413,7 @@ export async function buildGateway(cfg: Config, deps: GatewayDeps = {}): Promise
           // Recovering = the row was journaled by an earlier process (a restart), not a continuation here.
           const recovering = !touched.has(key);
           fire("P1_after_planned", runId, stepNo, recovering, stepCtx);
-          const res = await withLock(c, key, true, () => advance(c, key, recovering, stepCtx));
+          const res = await withLock(c, key, true, () => advance(c, key, recovering, stepCtx, fresh ? planned.row : undefined));
           return res as Outcome;
         },
       );

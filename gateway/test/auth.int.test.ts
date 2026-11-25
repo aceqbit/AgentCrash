@@ -68,6 +68,7 @@ describe("OAuth 2.0 client credentials and per-tool scopes", () => {
   it("records an auth.denied span with the required scope", async () => {
     const run = await newRun();
     await call(run, await rig.token("agent-readonly"));
+    rig.gw.tracing.flush();
     const spans = (await import("./helpers.js")).readSpans(rig.cfg.tracesFile);
     const denied = spans.find((s) => s.name === "auth.denied" && s.trace_id === run.replace(/-/g, ""));
     expect(denied).toBeTruthy();
