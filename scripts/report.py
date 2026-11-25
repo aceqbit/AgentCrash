@@ -68,13 +68,14 @@ def generic_block(title: str, pattern: str, keys: list[str]) -> str:
 def render() -> str:
     parts = [
         sweep_block("Crash sweep (safe)", _safe()),
+        sweep_block("Crash sweep (second kill during recovery)", latest("sweep_*_double_*.json")),
         sweep_block("Crash sweep (unsafe mode, expected to fail)", latest("sweep_*_unsafe_*.json")),
         generic_block("Security tests", "security_*.json", ["total", "blocked", "failed"]),
         generic_block(
             "Fuzz", "fuzz_*.json", ["scenarios", "failures", "seed", "max_recovery_ms"]
         ),
         generic_block(
-            "Load", "load_*.json", ["runs", "completed", "kills", "duplicates", "lost", "recovery_p95_ms"]
+            "Load", "load_*.json", ["runs", "completed", "waiting_unknown", "kills", "duplicates", "lost", "unknown", "recovery_p50_ms", "recovery_p95_ms", "recovery_max_ms"]
         ),
     ]
     bench = latest("bench_*.json")
@@ -104,15 +105,25 @@ def _safe() -> tuple[Path, dict] | None:
     return files[-1], json.loads(files[-1].read_text(encoding="utf-8"))
 
 
-def main() -> None:
-    readme = ROOT / "README.md"
-    text = readme.read_text(encoding="utf-8")
+def fill(path: Path, body: str) -> None:
+    text = path.read_text(encoding="utf-8")
     if START not in text or END not in text:
-        raise SystemExit("README.md is missing the results markers")
+        raise SystemExit(f"{path.name} is missing the results markers")
     head, rest = text.split(START, 1)
     _, tail = rest.split(END, 1)
-    readme.write_text(f"{head}{START}\n\n{render()}\n{END}{tail}", encoding="utf-8")
-    print("README results section regenerated")
+    path.write_text(f"{head}{START}
+
+{body}
+{END}{tail}", encoding="utf-8")
+
+
+def main() -> None:
+    body = render()
+    fill(ROOT / "README.md", body)
+    writeup = ROOT / "docs" / "WRITEUP.md"
+    if writeup.exists():
+        fill(writeup, body)
+    print("results sections regenerated")
 
 
 if __name__ == "__main__":
