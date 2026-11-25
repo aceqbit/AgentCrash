@@ -1,0 +1,37 @@
+{
+  "git_sha": "1eb0a39b97e0666f2307544a0c3f5debf86789e6",
+  "total": 51,
+  "blocked": 51,
+  "failed": 0,
+  "blocked_checks": 46,
+  "categories": {
+    "missing_scope": {
+      "tests": 8,
+      "blocked": 8
+    },
+    "token_validity": {
+      "tests": 12,
+      "blocked": 12
+    },
+    "scope_matching": {
+      "tests": 4,
+      "blocked": 4
+    },
+    "operator_endpoints": {
+      "tests": 4,
+      "blocked": 4
+    },
+    "input_validation": {
+      "tests": 15,
+      "blocked": 15
+    },
+    "result_injection": {
+      "tests": 2,
+      "blocked": 2
+    },
+    "token_endpoint": {
+      "tests": 6,
+      "blocked": 6
+    }
+  }
+}

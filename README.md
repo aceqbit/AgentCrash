@@ -29,6 +29,7 @@ flowchart LR
 - The runtime never talks to an MCP server; every call goes through `POST /v1/runs/{run}/steps/{n}/call`.
 - Idempotency key: `sha256(run_id:step_no:tool:canonical_json(args))`.
 - Spans (`run`, `step.<n>`, `journal.plan`, `journal.sent`, `mcp.call`, `journal.done`, `recovery.scan`, `recovery.resume`) go to the console and `results/traces.jsonl`.
+- Auth: an in-repo OAuth 2.0 client-credentials endpoint (`gateway/src/authserver.ts`) issues short-lived ES256 JWTs with one scope per tool (`tool:<name>`) and serves a JWKS; the gateway verifies signature, expiry, issuer, audience and scope with `jose` on every call. Set `AGENTCRASH_AUTH=1` to run the stack with it.
 
 ## Quick start
 
@@ -134,6 +135,16 @@ Source: `results/sweep_bank_5_unsafe_20261125T160839Z.json` (git `e5a5d75120`).
 | 4 | P4_awaiting_approval | False | 0 | 0 | 0 | True |
 
 </details>
+
+### Security tests
+
+Source: `results/security_20261125T163041Z.json`.
+
+| metric | value |
+|---|---|
+| total | 51 |
+| blocked | 51 |
+| failed | 0 |
 
 <!-- results:end -->
 
