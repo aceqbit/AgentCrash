@@ -31,15 +31,12 @@ export function buildMock(opts: MockOptions): FastifyInstance {
   let effects: Effect[] = [];
   const byKey = new Map<string, Effect>();
   const balances = new Map<string, number>();
-  let tickets = 0;
 
   const apply = (e: Effect): void => {
     if (e.tool === "transfer") {
       const a = e.args as { from: string; to: string; amount: number };
       balances.set(a.from, (balances.get(a.from) ?? 1000) - a.amount);
       balances.set(a.to, (balances.get(a.to) ?? 1000) + a.amount);
-    } else if (e.tool === "create_ticket") {
-      tickets += 1;
     }
   };
 
@@ -47,7 +44,6 @@ export function buildMock(opts: MockOptions): FastifyInstance {
     effects = [];
     byKey.clear();
     balances.clear();
-    tickets = 0;
     if (!existsSync(effectsPath)) return;
     for (const line of readFileSync(effectsPath, "utf8").split("\n")) {
       if (!line) continue;
