@@ -29,6 +29,8 @@ def main(argv: list[str] | None = None) -> int:
     if args.action == "up":
         sup.kill_pidfiles()
         sup.start_mock()
+        if sup.AUTH:
+            sup.start_auth()
         sup.start_gateway()
         sup.start_runtime()
         print("stack up: mock 7101, gateway 7102, runtime 7103")

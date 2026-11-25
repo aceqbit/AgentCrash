@@ -91,6 +91,7 @@ def _approve_pending(run_id: str) -> None:
                 httpx.post(
                     sup.url("gateway", f"/v1/runs/{run_id}/approve"),
                     json={"step_no": c["step_no"]},
+                    headers=sup.operator_headers(),
                     timeout=10,
                 )
     except httpx.HTTPError:
@@ -194,6 +195,7 @@ def sweep(
     started = datetime.now(UTC)
     sup.kill_pidfiles()
     mock = sup.start_mock()
+    auth = sup.start_auth() if sup.AUTH else None
     boot_gw = sup.start_gateway()  # the runtime lists runs from the gateway at start-up
     runtime = sup.start_runtime()
     sup.stop(boot_gw)
@@ -214,6 +216,7 @@ def sweep(
     finally:
         sup.stop(runtime)
         sup.stop(mock)
+        sup.stop(auth)
         sup.kill_pidfiles()
     rec = [r.recovery_ms for r in rows if r.crashed]
     summary = {

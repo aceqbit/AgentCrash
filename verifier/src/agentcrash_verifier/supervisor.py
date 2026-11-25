@@ -13,6 +13,17 @@ ROOT = Path(__file__).resolve().parents[3]
 RUN_DIR = ROOT / ".run"
 _VENV_BIN = "Scripts" if sys.platform == "win32" else "bin"
 RUNTIME_PY = ROOT / "runtime" / ".venv" / _VENV_BIN / ("python.exe" if sys.platform == "win32" else "python")
+def _load_dotenv() -> None:
+    f = ROOT / ".env"
+    if f.exists():
+        for line in f.read_text(encoding="utf-8").splitlines():
+            if line.strip() and not line.startswith("#") and "=" in line:
+                k, v = line.split("=", 1)
+                os.environ.setdefault(k.strip(), v.strip())
+
+
+_load_dotenv()
+AUTH = os.environ.get("AGENTCRASH_AUTH") == "1"
 PORTS = {"mock": 7101, "gateway": 7102, "runtime": 7103, "auth": 7104}
 DB_URL = os.environ.get("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/agentcrash")
 
@@ -50,8 +61,34 @@ def start_mock(env: dict[str, str] | None = None) -> subprocess.Popen[bytes]:
     return p
 
 
+def start_auth() -> subprocess.Popen[bytes]:
+    e = {"AUTH_PORT": str(PORTS["auth"]), "AUTH_KEY_FILE": str(RUN_DIR / "auth-key.json")}
+    p = _spawn("auth", ["node", "gateway/dist/authmain.js"], e)
+    wait_http(url("auth", "/health"))
+    return p
+
+
+def operator_headers() -> dict[str, str]:
+    """Bearer header for the operator client when auth is on; empty otherwise."""
+    if not AUTH:
+        return {}
+    r = httpx.post(
+        url("auth", "/token"),
+        data={
+            "grant_type": "client_credentials",
+            "client_id": "operator",
+            "client_secret": os.environ["AUTH_OPERATOR_SECRET"],
+        },
+        timeout=10,
+    )
+    r.raise_for_status()
+    return {"Authorization": f"Bearer {r.json()['access_token']}"}
+
+
 def start_gateway(env: dict[str, str] | None = None, wait: bool = True) -> subprocess.Popen[bytes]:
+    auth_env = {"AUTH_JWKS_URL": url("auth", "/jwks.json")} if AUTH else {}
     e = {
+        **auth_env,
         "GATEWAY_PORT": str(PORTS["gateway"]),
         "MCP_URL": url("mock", "/mcp"),
         "DATABASE_URL": DB_URL,
@@ -66,7 +103,22 @@ def start_gateway(env: dict[str, str] | None = None, wait: bool = True) -> subpr
 
 
 def start_runtime(env: dict[str, str] | None = None) -> subprocess.Popen[bytes]:
-    e = {"RUNTIME_PORT": str(PORTS["runtime"]), "GATEWAY_URL": url("gateway"), "DATABASE_URL": DB_URL, **(env or {})}
+    auth_env = (
+        {
+            "AUTH_TOKEN_URL": url("auth", "/token"),
+            "AUTH_CLIENT_ID": "agent-runtime",
+            "AUTH_CLIENT_SECRET": os.environ.get("AUTH_RUNTIME_SECRET", ""),
+        }
+        if AUTH
+        else {}
+    )
+    e = {
+        "RUNTIME_PORT": str(PORTS["runtime"]),
+        "GATEWAY_URL": url("gateway"),
+        "DATABASE_URL": DB_URL,
+        **auth_env,
+        **(env or {}),
+    }
     p = _spawn("runtime", [str(RUNTIME_PY), "-m", "agentcrash_runtime"], e)
     wait_http(url("runtime", "/health"), timeout=60)
     return p
