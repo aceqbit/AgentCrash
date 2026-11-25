@@ -19,7 +19,10 @@ test:
     powershell -NoProfile -File scripts/test.ps1
 
 integration:
-    @Write-Host "not implemented"; exit 1
+    powershell -NoProfile -File scripts/integration.ps1
+
+build:
+    powershell -NoProfile -File scripts/build.ps1
 
 sweep SCENARIO="bank_5":
     @Write-Host "not implemented"; exit 1
