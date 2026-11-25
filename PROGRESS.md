@@ -7,3 +7,4 @@ P1.3 done 2026-11-25 (accept test tests/test_integration_bank5.py runs after P1.
 P1.4 done 2026-11-25
 P1.5 done 2026-11-25
 P1.6 done 2026-11-25
+P1.7 done 2026-11-25

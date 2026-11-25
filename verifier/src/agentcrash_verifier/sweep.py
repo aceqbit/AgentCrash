@@ -136,7 +136,10 @@ def record_oracle(scenario: Scenario, name: str) -> list[dict[str, Any]]:
 def run_point(scenario: Scenario, name: str, step: int, point: str, unsafe: bool) -> Row:
     _reset()
     gw = sup.start_gateway(_gw_env(unsafe, f"{step}:{point}"))
-    expects_crash = point != "P4_awaiting_approval" or scenario.steps[step].requires_approval
+    # Unsafe mode has no approval gate, so P4 never fires there.
+    expects_crash = point != "P4_awaiting_approval" or (
+        scenario.steps[step].requires_approval and not unsafe
+    )
     run_id = _start_run(name)
     crashed = False
     if expects_crash:
@@ -181,7 +184,12 @@ def _p95(xs: list[int]) -> int:
     return s[max(0, -(-95 * len(s) // 100) - 1)]
 
 
-def sweep(name: str, unsafe: bool, out_dir: Path) -> tuple[Path, dict[str, Any]]:
+def sweep(
+    name: str,
+    unsafe: bool,
+    out_dir: Path,
+    only: list[tuple[int, str]] | None = None,
+) -> tuple[Path, dict[str, Any]]:
     scenario = load_scenario(name)
     started = datetime.now(UTC)
     sup.kill_pidfiles()
@@ -194,6 +202,8 @@ def sweep(name: str, unsafe: bool, out_dir: Path) -> tuple[Path, dict[str, Any]]
         record_oracle(scenario, name)
         for step in range(len(scenario.steps)):
             for point in POINTS:
+                if only is not None and (step, point) not in only:
+                    continue
                 row = run_point(scenario, name, step, point, unsafe)
                 print(
                     f"step {step} {point}: dup={row.duplicates} lost={row.lost} "
