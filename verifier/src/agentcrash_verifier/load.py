@@ -4,6 +4,7 @@ import json
 import math
 import os
 import random
+import threading
 import time
 from collections import Counter
 from datetime import UTC, datetime
@@ -14,7 +15,7 @@ import httpx
 
 from . import supervisor as sup
 from .scenario import idempotency_key, load_scenario
-from .sweep import _git_sha, _reset
+from .sweep import _git_sha
 
 TRACES = sup.RUN_DIR / "load-traces.jsonl"
 
@@ -57,48 +58,61 @@ def load(runs: int, kills: int, out_dir: Path, seed: int, scenario_name: str = "
     started = datetime.now(UTC)
     TRACES.unlink(missing_ok=True)
     sup.kill_pidfiles()
-    mock = sup.start_mock({"MOCK_DELAY_MS": os.environ.get("MOCK_DELAY_MS", "120")})
+    mock = sup.start_mock({"MOCK_DELAY_MS": os.environ.get("MOCK_DELAY_MS", "3000")})
     auth = sup.start_auth() if sup.AUTH else None
+    sup.reset_db()
+    sup.reset_mock()
     boot = sup.start_gateway()
     runtime = sup.start_runtime()
     sup.stop(boot)
+    httpx.post(sup.url("runtime", "/_reset"), timeout=30).raise_for_status()
     gw = _gw()
-    _reset()
     ids = [
         str(httpx.post(sup.url("runtime", "/runs"), json={"scenario": scenario_name}, timeout=30).json()["run_id"])
         for _ in range(runs)
     ]
-    done_kills = 0
-    next_kill = time.time() + 0.4
+    holder: dict[str, Any] = {"gw": gw, "kills": 0}
     final: dict[str, dict[str, Any]] = {}
+    stop_killer = threading.Event()
+
+    def killer() -> None:
+        time.sleep(0.3)
+        while holder["kills"] < kills and not stop_killer.is_set():
+            sup.stop(holder["gw"])  # hard kill at an arbitrary moment, not at a hook
+            time.sleep(rnd.uniform(0.0, 0.3))
+            holder["gw"] = _gw()
+            holder["kills"] += 1
+            stop_killer.wait(rnd.uniform(0.3, 0.9))
+
+    kt = threading.Thread(target=killer, daemon=True)
+    kt.start()
     try:
         deadline = time.time() + 300
         while len(final) < runs:
             if time.time() > deadline:
                 raise TimeoutError(f"only {len(final)}/{runs} runs settled")
-            if done_kills < kills and time.time() >= next_kill:
-                sup.stop(gw)  # hard kill at an arbitrary moment, not at a hook
-                time.sleep(rnd.uniform(0.0, 0.3))
-                gw = _gw()
-                done_kills += 1
-                next_kill = time.time() + rnd.uniform(0.4, 1.5)
-                continue
             for rid in ids:
                 if rid in final:
                     continue
                 try:
                     run = httpx.get(sup.url("gateway", f"/v1/runs/{rid}"), timeout=10).json()
-                except httpx.HTTPError:
-                    continue
-                _operator_step(rid, run)
+                    _operator_step(rid, run)
+                except (httpx.HTTPError, ValueError):
+                    continue  # gateway is down or restarting; poll again
                 if _settled(run):
                     final[rid] = run
             time.sleep(0.1)
+        stop_killer.set()
+        kt.join(timeout=30)
+        done_kills = int(holder["kills"])
+        gw = holder["gw"]
         # Let any in-flight resend finish before reading the ground truth.
         time.sleep(1.0)
         effects: list[dict[str, Any]] = httpx.get(sup.url("mock", "/_effects"), timeout=30).json()
     finally:
-        sup.stop(gw)
+        stop_killer.set()
+        kt.join(timeout=30)
+        sup.stop(holder["gw"])
         sup.stop(runtime)
         sup.stop(mock)
         sup.stop(auth)

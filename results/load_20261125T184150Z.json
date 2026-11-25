@@ -1,0 +1,18 @@
+{
+  "git_sha": "626e42b1ead3703769cd2bbd3cf324e92c16f85c",
+  "started": "2026-11-25T18:41:50.627113+00:00",
+  "seed": 7,
+  "scenario": "bank_5",
+  "runs": 50,
+  "completed": 50,
+  "waiting_unknown": 0,
+  "kills": 5,
+  "duplicates": 0,
+  "lost": 0,
+  "unknown": 0,
+  "stray_effects": 0,
+  "recovery_scans": 135,
+  "recovery_p50_ms": 772,
+  "recovery_p95_ms": 1297,
+  "recovery_max_ms": 3679
+}
