@@ -13,3 +13,10 @@ Client-credentials grant, JWKS endpoint, one scope per tool (`tool:<name>`). Clo
 
 ## D4: Dev tooling beyond section 3
 `typescript`, `eslint`, `typescript-eslint`, `@types/node`, `@types/pg` (TS tooling named by prompt 0), `ruff`, `mypy` (named by prompt 0).
+## D5: Extra dependencies (2026-11-25)
+- `pyyaml` (runtime, verifier): scenarios are YAML (CLAUDE.md section 9).
+- `zod` (mock-servers, gateway): peer dependency of `@modelcontextprotocol/sdk` for tool input schemas.
+- `@opentelemetry/api`, `@opentelemetry/sdk-trace-base` (gateway): OpenTelemetry SDK for JS (section 3); spans are written by a small JSONL exporter instead of OTLP, see D2.
+- Python OpenTelemetry is not used: the gateway emits all spans; the runtime does not (D2).
+- `types-pyyaml` (dev): mypy stubs.
+- Live model uses httpx against the Anthropic Messages API directly; no `anthropic` package.

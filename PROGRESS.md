@@ -3,3 +3,4 @@
 P0 done 2026-11-25
 P1.1 done 2026-11-25
 P1.2 done 2026-11-25
+P1.3 done 2026-11-25 (accept test tests/test_integration_bank5.py runs after P1.4 provides the full gateway)

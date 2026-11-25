@@ -1,0 +1,9 @@
+name: bank_5
+seed: 7
+goal: "Move 10 from A to B, open a review ticket, email ops, move 5 from B to C, then email finance."
+steps:
+  - {tool: transfer, args: {from: A, to: B, amount: 10}, idempotent: true}
+  - {tool: create_ticket, args: {title: "Review transfer"}, idempotent: true, requires_approval: true}
+  - {tool: send_email, args: {to: ops@example.test, subject: "Transfer done"}, idempotent: false, probe: list_sent_emails}
+  - {tool: transfer, args: {from: B, to: C, amount: 5}, idempotent: true}
+  - {tool: send_email, args: {to: finance@example.test, subject: "All done"}, idempotent: false, probe: null}

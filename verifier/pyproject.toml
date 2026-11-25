@@ -2,10 +2,20 @@
 name = "agentcrash-verifier"
 version = "0.0.0"
 requires-python = ">=3.12,<3.13"
-dependencies = []
+dependencies = [
+    "httpx>=0.28.1",
+    "psycopg[binary]>=3.3.9",
+    "pyyaml>=6.0.4",
+]
 
 [dependency-groups]
-dev = ["pytest", "ruff", "mypy"]
+dev = [
+    "pytest",
+    "ruff",
+    "mypy",
+    "types-pyyaml>=6.0.12.20261122",
+    "hypothesis>=6.170.17",
+]
 
 [build-system]
 requires = ["hatchling"]
