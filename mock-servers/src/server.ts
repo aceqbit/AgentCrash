@@ -18,6 +18,8 @@ export interface Effect {
 
 export interface MockOptions {
   dir: string;
+  /** Test-only: hold each reply for up to this many ms after the effect was applied (widens the P2 window). */
+  replyDelayMs?: number;
 }
 
 type ToolResult = { content: { type: "text"; text: string }[]; isError?: boolean };
@@ -132,6 +134,14 @@ export function buildMock(opts: MockOptions): FastifyInstance {
   // Stateless streamable HTTP: a fresh server + transport per request.
   app.post("/mcp", async (req, reply) => {
     reply.hijack();
+    const maxDelay = opts.replyDelayMs ?? 0;
+    if (maxDelay > 0) {
+      const end = reply.raw.end.bind(reply.raw) as (...a: unknown[]) => unknown;
+      reply.raw.end = ((...a: unknown[]) => {
+        setTimeout(() => end(...a), Math.random() * maxDelay);
+        return reply.raw;
+      }) as typeof reply.raw.end;
+    }
     const server = makeServer();
     const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined, enableJsonResponse: true });
     reply.raw.on("close", () => {

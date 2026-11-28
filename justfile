@@ -21,23 +21,38 @@ test:
 integration:
     powershell -NoProfile -File scripts/integration.ps1
 
+setup:
+    powershell -NoProfile -File scripts/setup.ps1
+
 build:
     powershell -NoProfile -File scripts/build.ps1
 
 sweep SCENARIO="bank_5":
-    @Write-Host "not implemented"; exit 1
+    powershell -NoProfile -File scripts/sweep.ps1 -Scenario {{SCENARIO}}
 
 sweep-unsafe:
-    @Write-Host "not implemented"; exit 1
+    powershell -NoProfile -File scripts/sweep.ps1 -Unsafe
 
-fuzz N="500":
-    @Write-Host "not implemented"; exit 1
+fuzz N="500" SEED="random":
+    powershell -NoProfile -File scripts/fuzz.ps1 -N {{N}} -Seed {{SEED}}
 
 demo:
     @Write-Host "not implemented"; exit 1
 
 report:
-    @Write-Host "not implemented"; exit 1
+    uv --project verifier run python scripts/report.py
 
 check:
-    @Write-Host "not implemented"; exit 1
+    powershell -NoProfile -File scripts/check.ps1
+
+
+sweep-double SCENARIO="bank_5":
+    powershell -NoProfile -File scripts/sweep.ps1 -Scenario {{SCENARIO}} -Double
+
+
+
+load RUNS="50" KILLS="5":
+    powershell -NoProfile -File scripts/load.ps1 -Runs {{RUNS}} -Kills {{KILLS}}
+
+bench LABEL="after":
+    powershell -NoProfile -File scripts/bench.ps1 -Label {{LABEL}}

@@ -1,0 +1,23 @@
+crash:
+  double: false
+  point: P2_after_exec
+  step: 0
+failure: fuzz_bea4dbffd5 step=0 point=P2_after_exec double=False dup=1(['transfer'])
+  lost=0 end=DONE
+name: fuzz_bea4dbffd5
+seed: 0
+steps:
+- args:
+    amount: 1
+    from: A
+    to: A
+  idempotent: true
+  requires_approval: false
+  tool: transfer
+- args:
+    amount: 1
+    from: A
+    to: A
+  idempotent: true
+  requires_approval: false
+  tool: transfer
